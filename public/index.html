@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DART 외부감사 조회</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f1ed;--surf:#fff;--surf2:#f0efe9;--surf3:#e8e6de;--border:#e0ddd4;--border2:#ccc9bc;--text:#1a1916;--text2:#6b6860;--text3:#9c9a93;--accent:#1e3a6e;--accent2:#2a4d8f;--abg:#e8edf7;--beauty:#8b3a68;--bbg:#f7edf3;--bbd:#ddb8ce;--game:#1d6b3e;--gbg:#eaf4ee;--gbd:#a8d5bc;--ok:#1d6b3e;--warn:#7a4f00;--danger:#8b1a1a;--r:10px;--rs:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.topbar{background:var(--surf);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 2rem;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.logo{font-size:16px;font-weight:700;color:var(--accent)}
+.logo-tag{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--abg);color:var(--accent2);padding:2px 8px;border-radius:4px}
+.top-r{margin-left:auto;font-size:12px;color:var(--text2)}
+.top-r a{color:var(--accent2)}
+.wrap{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 54px)}
+.side{background:var(--surf);border-right:1px solid var(--border);padding:1.5rem;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+.s-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px}
+.s-sec{margin-bottom:1.4rem}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.tab{border:2px solid var(--border);border-radius:var(--rs);padding:12px 6px;cursor:pointer;text-align:center;transition:all .15s;background:var(--surf);user-select:none}
+.tab-icon{font-size:22px;margin-bottom:4px}
+.tab-name{font-size:12px;font-weight:700}
+.tab-chk{font-size:10px;margin-top:3px;height:14px;color:var(--text3)}
+.tab.on-b{border-color:var(--beauty);background:var(--bbg)}
+.tab.on-g{border-color:var(--game);background:var(--gbg)}
+.rg{display:grid;gap:5px}
+.rc2{border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;cursor:pointer;transition:all .15s;background:var(--surf);display:flex;align-items:center;gap:10px}
+.rc2:hover{border-color:var(--border2);background:var(--surf2)}
+.rc2.on{border-color:var(--accent2);background:var(--abg)}
+.rc2-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;transition:all .15s}
+.rc2.on .rc2-dot{border-color:var(--accent2);background:var(--accent2)}
+.rc2-lbl{font-size:13px;font-weight:500}
+.ftabs{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ftab{border:1.5px solid var(--border);border-radius:var(--rs);padding:8px;cursor:pointer;text-align:center;font-size:12px;font-weight:500;color:var(--text2);background:var(--surf);transition:all .15s}
+.ftab:hover{background:var(--surf2)}
+.ftab.on{border-color:var(--accent2);background:var(--abg);color:var(--accent2)}
+.ftab-sub{font-size:10px;font-weight:400;color:var(--text3);margin-top:2px}
+.btn-go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:var(--r);background:var(--accent);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:background .15s;margin-top:6px}
+.btn-go:hover:not(:disabled){background:#162e58}
+.btn-go:disabled{background:#8fa0c0;cursor:not-allowed}
+.main{padding:1.5rem;display:flex;flex-direction:column;gap:1rem}
+.pc{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1.5rem;display:none}
+.pc.on{display:block}
+.pt{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ptxt{font-size:13px;font-weight:500}
+.ppct{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent2);font-weight:500}
+.ptrack{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.pfill{height:100%;background:var(--accent2);border-radius:2px;transition:width .2s;width:0}
+.plog{font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;max-height:80px;overflow-y:auto;line-height:1.9}
+.stats{display:none;grid-template-columns:repeat(4,1fr);gap:10px}
+.stats.on{display:grid}
+.sc{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.1rem}
+.sl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.sv{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-.5px}
+.su{font-size:10px;color:var(--text3);margin-top:2px}
+.res{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1.5rem;display:none}
+.res.on{display:block}
+.rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+.rt{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.badge{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 9px;border-radius:20px;background:var(--abg);color:var(--accent2)}
+.ra{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.fi{padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);font-size:12px;width:160px;font-family:'Noto Sans KR',sans-serif}
+.bdl{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--rs);background:var(--surf2);border:1px solid var(--border2);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.bdl:hover{background:var(--surf3)}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rs)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--surf2);padding:9px 11px;text-align:left;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{background:var(--surf3);color:var(--text)}
+thead th.sorted{color:var(--accent2)}
+tbody td{padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafaf8}
+.num{text-align:right;font-family:'JetBrains Mono',monospace}
+.cl{color:var(--accent2);font-weight:600;text-decoration:none}
+.cl:hover{text-decoration:underline}
+.pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px}
+.pb{background:var(--bbg);color:var(--beauty);border:1px solid var(--bbd)}
+.pg{background:var(--gbg);color:var(--game);border:1px solid var(--gbd)}
+.b4{background:var(--abg);border:1px solid #b0bede;color:var(--accent);font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px}
+.op-ok{color:var(--ok);font-weight:600}
+.op-bad{color:var(--danger);font-weight:600}
+.op-warn{color:var(--warn);font-weight:600}
+.empty{text-align:center;padding:3rem;color:var(--text3)}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo">📋 DART 외부감사</span>
+  <span class="logo-tag">화장품 · 게임</span>
+  <div class="top-r"><a href="https://dart.fss.or.kr" target="_blank">dart.fss.or.kr ↗</a></div>
+</div>
+<div class="wrap">
+<aside class="side">
+  <div class="s-sec">
+    <div class="s-lbl">📂 업종 선택</div>
+    <div class="tabs">
+      <div class="tab on-b" id="tb" onclick="toggleSector('beauty')">
+        <div class="tab-icon">💄</div>
+        <div class="tab-name" style="color:var(--beauty)">화장품</div>
+        <div class="tab-chk" id="ck-b">✓ 선택됨</div>
+      </div>
+      <div class="tab on-g" id="tg" onclick="toggleSector('game')">
+        <div class="tab-icon">🎮</div>
+        <div class="tab-name" style="color:var(--game)">게임</div>
+        <div class="tab-chk" id="ck-g">✓ 선택됨</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);text-align:center">탭 클릭으로 켜고 끄기</div>
+  </div>
+  <div class="s-sec">
+    <div class="s-lbl">📄 보고서 선택</div>
+    <div class="rg" id="rg"></div>
+  </div>
+  <div class="s-sec">
+    <div class="s-lbl">💰 보수 기준</div>
+    <div class="ftabs">
+      <div class="ftab on" id="ft-c" onclick="setFee('계약')">계약<div class="ftab-sub">연간 계약 총액</div></div>
+      <div class="ftab"    id="ft-a" onclick="setFee('실제')">실제<div class="ftab-sub">당기 집행액</div></div>
+    </div>
+  </div>
+  <button class="btn-go" id="goBtn" onclick="go()">🔍 조회 시작</button>
+</aside>
+<main class="main">
+  <div class="pc" id="pc">
+    <div class="pt"><span class="ptxt" id="ptxt">준비 중...</span><span class="ppct" id="ppct">0%</span></div>
+    <div class="ptrack"><div class="pfill" id="pfill"></div></div>
+    <div class="plog" id="plog"></div>
+  </div>
+  <div class="stats" id="stats">
+    <div class="sc"><div class="sl">조회 기업</div><div class="sv" id="sC">—</div><div class="su">개사</div></div>
+    <div class="sc"><div class="sl">평균 감사보수</div><div class="sv" id="sF">—</div><div class="su" id="suF">백만원</div></div>
+    <div class="sc"><div class="sl">평균 감사시간</div><div class="sv" id="sH">—</div><div class="su">시간</div></div>
+    <div class="sc"><div class="sl">적정의견</div><div class="sv" id="sO">—</div><div class="su">%</div></div>
+  </div>
+  <div class="res" id="res">
+    <div class="rh">
+      <div class="rt">감사 현황 <span class="badge" id="cnt">0건</span></div>
+      <div class="ra">
+        <input class="fi" type="text" placeholder="기업명·감사인 검색" oninput="filter(this.value)">
+        <button class="bdl" onclick="dlCSV()">📥 CSV</button>
+        <button class="bdl" onclick="dlExcel()">📊 엑셀</button>
+      </div>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th onclick="srt('sector')"    id="th_sector">업종</th>
+          <th onclick="srt('corp_name')" id="th_corp_name">기업명</th>
+          <th onclick="srt('auditor')"   id="th_auditor">감사인</th>
+          <th onclick="srt('is_big4')"   id="th_is_big4">Big4</th>
+          <th onclick="srt('fee')"       id="th_fee"   style="text-align:right">보수(백만) ↕</th>
+          <th onclick="srt('hours')"     id="th_hours" style="text-align:right">시간 ↕</th>
+          <th onclick="srt('fph')"       id="th_fph"   style="text-align:right">시간당(원) ↕</th>
+          <th onclick="srt('opinion')"   id="th_opinion">감사의견</th>
+          <th>감사기간</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="9" class="empty">조건 설정 후 조회하세요.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+<script>
+const PRESETS=[{"label": "2026년 1분기보고서", "year": "2026", "rcode": "A003"}, {"label": "2025년 사업보고서", "year": "2025", "rcode": "A001"}, {"label": "2025년 3분기보고서", "year": "2025", "rcode": "A004"}, {"label": "2025년 반기보고서", "year": "2025", "rcode": "A002"}, {"label": "2025년 1분기보고서", "year": "2025", "rcode": "A003"}, {"label": "2024년 사업보고서", "year": "2024", "rcode": "A001"}];
+const ALL={"화장품":["LG생활건강","아모레퍼시픽","코스맥스","한국콜마","클리오","잇츠한불","토니모리","에이블씨엔씨","에스디생명공학","코스메카코리아","씨앤씨인터내셔널","SK바이오랜드","나우코스","아이패밀리에스씨","브이티","코리아나","연우","인터로조","네이처리퍼블릭"],"게임":["엔씨소프트","넷마블","크래프톤","카카오게임즈","펄어비스","컴투스","위메이드","데브시스터즈","더블유게임즈","엠게임","액토즈소프트","조이시티","네오위즈","웹젠","드래곤플라이","NHN"]};
+let secs=new Set(['beauty','game']),selR=0,feeT='계약',allD=[],filtD=[],sCol='',sAsc=true;
+function renderRG(){document.getElementById('rg').innerHTML=PRESETS.map((p,i)=>`<div class="rc2${i===selR?' on':''}" onclick="selRCard(${i})"><div class="rc2-dot"></div><div class="rc2-lbl">${p.label}</div></div>`).join('');}
+renderRG();
+function selRCard(i){selR=i;renderRG();}
+function toggleSector(s){if(secs.has(s)){if(secs.size===1)return;secs.delete(s);}else secs.add(s);document.getElementById('tb').className='tab'+(secs.has('beauty')?' on-b':'');document.getElementById('tg').className='tab'+(secs.has('game')?' on-g':'');document.getElementById('ck-b').textContent=secs.has('beauty')?'✓ 선택됨':'';document.getElementById('ck-g').textContent=secs.has('game')?'✓ 선택됨':'';}
+function setFee(t){feeT=t;document.getElementById('ft-c').className='ftab'+(t==='계약'?' on':'');document.getElementById('ft-a').className='ftab'+(t==='실제'?' on':'');}
+async function go(){
+  const p=PRESETS[selR];
+  const targets=[];
+  if(secs.has('beauty'))ALL['화장품'].forEach(n=>targets.push({n,s:'화장품·뷰티'}));
+  if(secs.has('game'))ALL['게임'].forEach(n=>targets.push({n,s:'게임'}));
+  if(!targets.length){alert('업종을 선택하세요.');return;}
+  allD=[];filtD=[];
+  document.getElementById('goBtn').disabled=true;document.getElementById('goBtn').textContent='⏳ 조회 중...';
+  document.getElementById('pc').className='pc on';document.getElementById('stats').className='stats';document.getElementById('res').className='res';document.getElementById('plog').innerHTML='';
+  for(let i=0;i<targets.length;i++){
+    const{n,s}=targets[i];const pct=Math.round(i/targets.length*100);
+    document.getElementById('pfill').style.width=pct+'%';document.getElementById('ppct').textContent=pct+'%';
+    document.getElementById('ptxt').textContent=`[${i+1}/${targets.length}] ${n} 조회 중...`;
+    try{
+      const res=await fetch('/api/fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({corp_name:n,sector:s,year:p.year,rcode:p.rcode,ftype:feeT})});
+      const d=await res.json();const log=document.getElementById('plog');
+      if(d.ok){allD.push(d);log.innerHTML+=`<span style="color:var(--ok)">✅ ${d.corp_name} | ${d.auditor} | ${d.fee!=null?d.fee.toLocaleString()+'백만':'—'} | ${d.opinion}</span><br>`;}
+      else{log.innerHTML+=`<span style="color:var(--danger)">❌ ${n}: ${d.msg}</span><br>`;}
+      log.scrollTop=log.scrollHeight;
+    }catch(e){document.getElementById('plog').innerHTML+=`<span style="color:var(--danger)">❌ ${n}: ${e}</span><br>`;}
+  }
+  document.getElementById('pfill').style.width='100%';document.getElementById('ppct').textContent='100%';
+  document.getElementById('ptxt').textContent=`완료 — ${allD.length}개 성공`;
+  document.getElementById('goBtn').disabled=false;document.getElementById('goBtn').textContent='🔍 조회 시작';
+  filtD=[...allD];renderStats(allD);renderTable(filtD);
+  document.getElementById('stats').className='stats on';document.getElementById('res').className='res on';
+}
+function renderStats(data){
+  document.getElementById('sC').textContent=data.length;
+  const fees=data.map(d=>d.fee).filter(f=>f!=null),hrs=data.map(d=>d.hours).filter(h=>h!=null),ops=data.map(d=>d.opinion);
+  document.getElementById('sF').textContent=fees.length?Math.round(fees.reduce((a,b)=>a+b)/fees.length).toLocaleString():'—';
+  document.getElementById('sH').textContent=hrs.length?Math.round(hrs.reduce((a,b)=>a+b)/hrs.length).toLocaleString():'—';
+  const ok=ops.filter(o=>o&&o.includes('적정')&&!o.includes('부')).length;
+  document.getElementById('sO').textContent=ops.length?Math.round(ok/ops.length*100):'—';
+  document.getElementById('suF').textContent=`백만원 (${feeT})`;
+}
+function renderTable(data){
+  document.getElementById('cnt').textContent=data.length+'건';const tbody=document.getElementById('tbody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="9" class="empty">데이터 없음</td></tr>';return;}
+  tbody.innerHTML=data.map(r=>{
+    const isB=r.sector.includes('화장품');
+    const pill=`<span class="pill ${isB?'pb':'pg'}">${isB?'💄 화장품':'🎮 게임'}</span>`;
+    const opC=r.opinion==='적정'?'op-ok':r.opinion&&r.opinion!=='—'?(r.opinion==='한정'?'op-warn':'op-bad'):'';
+    return`<tr><td>${pill}</td><td><a class="cl" href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${r.rcept_no}" target="_blank">${r.corp_name}</a></td><td>${r.auditor}</td><td>${r.is_big4?'<span class="b4">Big4</span>':''}</td><td class="num">${r.fee!=null?r.fee.toLocaleString():'—'}</td><td class="num">${r.hours!=null?r.hours.toLocaleString():'—'}</td><td class="num">${r.fph!=null?r.fph.toLocaleString():'—'}</td><td class="${opC}">${r.opinion||'—'}</td><td style="font-size:11px;color:var(--text2)">${r.period||'—'}</td></tr>`;
+  }).join('');
+}
+function filter(q){q=q.toLowerCase();filtD=q?allD.filter(r=>(r.corp_name||'').toLowerCase().includes(q)||(r.auditor||'').toLowerCase().includes(q)):[...allD];renderTable(filtD);}
+function srt(col){document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted'));sAsc=sCol===col?!sAsc:true;sCol=col;document.getElementById('th_'+col)?.classList.add('sorted');filtD=[...filtD].sort((a,b)=>{const av=a[col],bv=b[col];if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;if(typeof av==='number')return sAsc?av-bv:bv-av;return sAsc?String(av).localeCompare(String(bv),'ko'):String(bv).localeCompare(String(av),'ko');});renderTable(filtD);}
+function dlCSV(){
+  if(!filtD.length){alert('먼저 조회하세요.');return;}
+  const p=PRESETS[selR];
+  const h=['업종','기업명','감사인','Big4',`감사보수(${feeT},백만원)`,`감사시간(${feeT},시간)`,'시간당보수(원)','감사의견','감사기간','계약보수(백만)','계약시간','실제보수(백만)','실제시간'];
+  const rows=filtD.map(r=>[r.sector,r.corp_name,r.auditor,r.is_big4?'Big4':'',r.fee??'',r.hours??'',r.fph??'',r.opinion,r.period,r.fee_contract??'',r.hours_contract??'',r.fee_actual??'',r.hours_actual??'']);
+  const csv='\uFEFF'+[h,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`dart_audit_${p.year}_${p.rcode}.csv`;a.click();
+}
+function dlExcel(){
+  if(!filtD.length){alert('먼저 조회하세요.');return;}
+  if(typeof XLSX==='undefined'){dlCSV();return;}
+  const p=PRESETS[selR];
+  const h=['업종','기업명','감사인','Big4',`감사보수(${feeT},백만원)`,`감사시간(${feeT},시간)`,'시간당보수(원)','감사의견','감사기간'];
+  const rows=filtD.map(r=>[r.sector,r.corp_name,r.auditor,r.is_big4?'Big4':'',r.fee,r.hours,r.fph,r.opinion,r.period]);
+  const ws=XLSX.utils.aoa_to_sheet([h,...rows]);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'외부감사');
+  XLSX.writeFile(wb,`dart_audit_${p.year}_${p.rcode}.xlsx`);
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</body>
+</html>
