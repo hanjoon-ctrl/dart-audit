@@ -1,6 +1,18 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/fetch", "destination": "/api/fetch.py" }
+  "functions": {
+    "api/fetch.py": {
+      "runtime": "vercel-python@0.0.0"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/fetch",
+      "dest": "/api/fetch.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.html"
+    }
   ]
 }
